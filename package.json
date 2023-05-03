@@ -1,0 +1,18 @@
+{
+  "name": "whitelist",
+  "version": "1.0.0",
+  "description": "Discord bot to automate adding players to a Minecraft Server Whitelist",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.10.2",
+    "dotenv": "^16.0.3",
+    "modern-rcon": "^1.0.3",
+    "rcon-client": "^4.2.3"
+  }
+}
