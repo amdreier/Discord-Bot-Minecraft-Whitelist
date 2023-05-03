@@ -36,9 +36,12 @@ client.on('messageCreate', (msg) => {
 client.on('interactionCreate', (interaction) => {
     if (!interaction.isChatInputCommand()) return; // Only continue if interaction is command
 
+    // /whitelist [minecraft-username] [optional: discord-nickname]
     if (interaction.commandName === 'whitelist') {
         try {
             (async () => {
+                console.log(`${interaction.member.user.tag} whitelist add Minecraft: ${interaction.options.get('minecraft-username').value}`);
+
                 // check for interaction in the correct channel
                 const channel = await client.channels.cache.get('1103163793284010024'); // Needs to be changed to server whitelist channel
 
@@ -57,13 +60,17 @@ client.on('interactionCreate', (interaction) => {
                 // handel roles
                 const targetUserId = interaction.options.get('discord-nickname')?.value || false;
                 if (!targetUserId) {
+                    console.log('(and no Discord user)');
                     await interaction.editReply("That user doesn't exist in this discord channel or you didn't include their Discord nickname. If the user does exist, make to do /whitelist with their Discord nickname included!");
                 } else {
                     const targetUser = await interaction.guild.members.fetch(targetUserId);
                     
                     if (!targetUser) {
+                        console.log('(and no Discord user)');
                         await interaction.editReply("That user doesn't exist in this discord channel or you didn't include their Discord nickname. If the user does exist, make to do /whitelist with their Discord nickname included!");
                     } else {
+                        console.log(`(and Discord: ${targetUser.user.tag})`);
+
                         const role = interaction.guild.roles.cache.get('1102474629467095143'); // need to change to server Whitelisted role
                         
                         if (!role) {
@@ -95,10 +102,11 @@ client.on('interactionCreate', (interaction) => {
         }
     }
 
+    // /help
     if (interaction.commandName === 'help') {
         interaction.reply(
                 {
-                content: 'Useage: /whitelist [Minecraft Username] [Optional: Discord nickname] (without the [])\nDescription: Whitelists the selected Minecraft username on the server.\nRequirements:\n\t- The command issuer MUST have the \"Trusted\" role.\n\t- If the person being whitelisted is on the Discord server, include that in the command (although this is not required).\n\nAdditional info: Be carefule who you whitelist! You are responsible for them, and any punishment they recieve, for a while, will be applied to you too (within reason)!',
+                content: 'Useage: /whitelist [Minecraft Username] [Optional: Discord nickname] (without the [])\nDescription: Whitelists the selected Minecraft username on the server. If a Discord nickname on the server is provided, it will add the \"Whitelisted\" role to that user.\nRequirements:\n\t- The command issuer MUST have the \"Trusted\" role.\n\t- The command must be issued in the \"whitelisting\" channel.\n\t- If the person being whitelisted is on the Discord server, include that in the command (although this is not required).\n\nAdditional info: Be carefule who you whitelist! You are responsible for them, and any punishment they recieve, for a while, will be applied to you too (within reason)!',
                 ephemeral: true
                 }
             );
