@@ -8,7 +8,7 @@ const client = new Client({
         IntentsBitField.Flags.GuildMembers,
         IntentsBitField.Flags.GuildMessages,
         IntentsBitField.Flags.MessageContent,
-    ],
+    ]
 });
 
 
@@ -57,21 +57,21 @@ client.on('interactionCreate', (interaction) => {
 
                 await interaction.deferReply();
 
-                // handel roles
+                // handle roles
                 const targetUserId = interaction.options.get('discord-nickname')?.value || false;
                 if (!targetUserId) {
                     console.log('(and no Discord user)');
-                    await interaction.editReply("That user doesn't exist in this discord channel or you didn't include their Discord nickname. If the user does exist, make to do /whitelist with their Discord nickname included!");
+                    await interaction.editReply("That user doesn't exist in this discord channel or you didn't include their Discord nickname. If the user does exist, make sure to do /whitelist with their Discord nickname included!");
                 } else {
                     const targetUser = await interaction.guild.members.fetch(targetUserId);
                     
                     if (!targetUser) {
                         console.log('(and no Discord user)');
-                        await interaction.editReply("That user doesn't exist in this discord channel or you didn't include their Discord nickname. If the user does exist, make to do /whitelist with their Discord nickname included!");
+                        await interaction.editReply("That user doesn't exist in this discord channel or you didn't include their Discord nickname. If the user does exist, make sure to do /whitelist with their Discord nickname included!");
                     } else {
                         console.log(`(and Discord: ${targetUser.user.tag})`);
 
-                        const role = interaction.guild.roles.cache.get('1102474629467095143'); // need to change to server Whitelisted role
+                        const role = interaction.guild.roles.cache.get(process.env.WHITELIST_ROLE_ID);
                         
                         if (!role) {
                             await interaction.editReply(`Error adding \"Whitelisted\" role to @${targetUser.user.username}`);
@@ -86,14 +86,14 @@ client.on('interactionCreate', (interaction) => {
                 
                 // handel RCON
                 const rcon = await Rcon.connect({
-                    host: "romaetplus.ddns.net", port: 6859, password: process.env.RCON_PSWD
+                    host: "romaetplus.amdreier.com", port: 2570, password: process.env.RCON_PSWD
                 });
 
                 await rcon.send(`say From Whitelist-bot: ${interaction.member.user.username} added ${interaction.options.get('minecraft-username').value} to the Whitelist`);
     
                 let response = await rcon.send(`whitelist add ${interaction.options.get('minecraft-username').value}`);
                  
-                interaction.followUp(`Server response: ${response}`);
+                await interaction.followUp(`Server response: ${response}`);
                  
                 rcon.end();
             })();
@@ -106,7 +106,7 @@ client.on('interactionCreate', (interaction) => {
     if (interaction.commandName === 'help') {
         interaction.reply(
                 {
-                content: 'Useage: /whitelist [Minecraft Username] [Optional: Discord nickname] (without the [])\nDescription: Whitelists the selected Minecraft username on the server. If a Discord nickname on the server is provided, it will add the \"Whitelisted\" role to that user.\nRequirements:\n\t- The command issuer MUST have the \"Trusted\" role.\n\t- The command must be issued in the \"whitelisting\" channel.\n\t- If the person being whitelisted is on the Discord server, include that in the command (although this is not required).\n\nAdditional info: Be carefule who you whitelist! You are responsible for them, and any punishment they recieve, for a while, will be applied to you too (within reason)!',
+                content: 'Useage: /whitelist [Minecraft Username] [Optional: Discord nickname] (without the [])\nDescription: Whitelists the selected Minecraft username on the server. If a Discord nickname on the server is provided, it will add the \"Whitelisted\" role to that user.\nRequirements:\n\t- The command issuer MUST have the \"Trusted\" role.\n- The command must be issued in the \"whitelisting\" channel.\n- If the person being whitelisted is on the Discord server, include that in the command (although this is not required).\n\nAdditional info: Be careful who you whitelist! You are responsible for them, and any punishment they receive, for a while, will be applied to you too (within reason)!',
                 ephemeral: true
                 }
             );
