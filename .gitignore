@@ -1,2 +1,4 @@
 .env
+whitelist_bot_runner
+*.c
 *.txt
