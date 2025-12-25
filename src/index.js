@@ -90,9 +90,9 @@ client.on('interactionCreate', (interaction) => {
                     host: "romaetplus.amdreier.com", port: 2570, password: process.env.RCON_PSWD
                 });
 
-                await rcon.send(`say From Whitelist-bot: ${quote(interaction.member.user.username)} added ${quote(interaction.options.get('minecraft-username').value)} to the Whitelist`);
+                await rcon.send(`say From Whitelist-bot: ${quote([interaction.member.user.username])} added ${quote([interaction.options.get('minecraft-username').value])} to the Whitelist`);
     
-                let response = await rcon.send(`whitelist add ${quote(interaction.options.get('minecraft-username').value)}`);
+                let response = await rcon.send(`whitelist add ${quote([interaction.options.get('minecraft-username').value])}`);
                  
                 await interaction.followUp(`Server response: ${response}`);
                  
