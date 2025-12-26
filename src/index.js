@@ -176,7 +176,7 @@ client.on('interactionCreate', (interaction) => {
                 var success = false;
                 var link = "";
 
-                const res = await fetch(`https://romaetplus.amdreier.com/api/resetLink?login_username=${login_username}&disc_uid=${disc_uid}&api_key=${process.env.API_KEY}`);
+                const res = await fetch(`https://romaetplus.amdreier.com/api/resetLink?login_username=${encodeURIComponent(login_username)}&disc_uid=${encodeURIComponent(disc_uid)}&api_key=${encodeURIComponent(process.env.API_KEY)}`);
                 if (res.status == 200) {
                     success = true;
                     link = await res.text();
