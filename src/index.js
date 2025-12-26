@@ -126,8 +126,8 @@ client.on('interactionCreate', (interaction) => {
                 const disc_username = interaction.user.username;
                 const disc_uid = interaction.user.id;
                 const token = interaction.options.get('login-token')?.value || "";
-                success = false;
-                expired = false;
+                var success = false;
+                var expired = false;
 
                 await fetch("https://romaetplus.amdreier.com/api/verify", {
                     method: "POST",
@@ -158,6 +158,38 @@ client.on('interactionCreate', (interaction) => {
                 interaction.reply(
                     {
                     content: reply,
+                    ephemeral: true
+                    }
+                );
+            })();
+        } catch (error) {
+            
+        }
+    }
+
+    // /reset-password [login-username]
+    if (interaction.commandName === 'reset-password') {
+        try {
+            (async () => {
+                const login_username = interaction.options.get('login-username')?.value || "";
+                const disc_uid = interaction.user.id;
+                var success = false;
+                var link = "";
+
+                await fetch(`https://romaetplus.amdreier.com/api/resetLink?login_username=${login_username}&disc_uid=${disc_uid}&api_key=${process.env.API_KEY}`)
+                .then(res => {
+                    if (res.status == 200) {
+                        success = true;
+                        link = res.text();
+                    }
+                })
+
+                const successMsg = `Here is you're reset link: ${link}. This will expire in 24 hours.`;
+                const errMsg = "There was an error generating your link. Please make sure the username you entered is the same one you used to log into the website, and your Discord account is verified."
+
+                interaction.reply(
+                    {
+                    content: success ? successMsg : errMsg,
                     ephemeral: true
                     }
                 );
