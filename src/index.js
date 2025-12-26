@@ -125,7 +125,7 @@ client.on('interactionCreate', (interaction) => {
                 const login_username = interaction.options.get('login-username')?.value || "";
                 const disc_username = interaction.user.username;
                 const disc_uid = interaction.user.id;
-                const token = interaction.options.get('token')?.value || "";
+                const token = interaction.options.get('login-token')?.value || "";
                 success = false;
                 expired = false;
 
