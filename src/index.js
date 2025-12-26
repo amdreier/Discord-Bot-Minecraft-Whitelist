@@ -122,8 +122,6 @@ client.on('interactionCreate', (interaction) => {
     if (interaction.commandName === 'verify') {
         try {
             (async () => {
-                await interaction.deferReply();
-
                 const login_username = interaction.options.get('login-username')?.value || "";
                 const disc_username = interaction.user.username;
                 const disc_uid = interaction.user.id;
