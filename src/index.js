@@ -182,7 +182,7 @@ client.on('interactionCreate', (interaction) => {
                     link = await res.text();
                 }
 
-                const successMsg = `Here is you're reset link: ${link}.\nThis link will expire in 24 hours.`;
+                const successMsg = `Here is you're reset link: ${encodeURIComponent(link)}.\nThis link will expire in 24 hours.`;
                 const errMsg = "There was an error generating your link. Please make sure the username you entered is the same one you used to log into the website, and your Discord account is verified."
 
                 interaction.reply(
