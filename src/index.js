@@ -129,7 +129,7 @@ client.on('interactionCreate', (interaction) => {
                 var success = false;
                 var expired = false;
 
-                await fetch("https://romaetplus.amdreier.com/api/verify", {
+                await fetch("https://romaetplus.amdreier.com/api/verifyDisc", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
