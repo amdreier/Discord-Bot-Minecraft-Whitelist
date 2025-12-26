@@ -176,13 +176,11 @@ client.on('interactionCreate', (interaction) => {
                 var success = false;
                 var link = "";
 
-                await fetch(`https://romaetplus.amdreier.com/api/resetLink?login_username=${login_username}&disc_uid=${disc_uid}&api_key=${process.env.API_KEY}`)
-                .then(res => {
-                    if (res.status == 200) {
-                        success = true;
-                        link = await res.text();
-                    }
-                })
+                const res = await fetch(`https://romaetplus.amdreier.com/api/resetLink?login_username=${login_username}&disc_uid=${disc_uid}&api_key=${process.env.API_KEY}`);
+                if (res.status == 200) {
+                    success = true;
+                    link = await res.text();
+                }
 
                 const successMsg = `Here is you're reset link: ${link}. This will expire in 24 hours.`;
                 const errMsg = "There was an error generating your link. Please make sure the username you entered is the same one you used to log into the website, and your Discord account is verified."
