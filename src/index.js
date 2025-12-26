@@ -180,7 +180,7 @@ client.on('interactionCreate', (interaction) => {
                 .then(res => {
                     if (res.status == 200) {
                         success = true;
-                        link = res.text();
+                        link = await res.text();
                     }
                 })
 
