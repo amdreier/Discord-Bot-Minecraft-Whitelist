@@ -5,7 +5,7 @@ const {REST, Routes, ApplicationCommandOptionType, PermissionFlagsBits, Client, 
 const commands = [
     {
         name: 'whitelist',
-        description: 'Whitelists the selected user. Use: /whitelist [username]', 
+        description: 'Whitelists the selected user in Minecraft. Use: /whitelist [username]', 
         options: [
             {
                 name: 'minecraft-username',
@@ -25,6 +25,36 @@ const commands = [
         name: 'help',
         description: 'Help with using the /whitelist command', 
     },
+    {
+        name: 'verify',
+        description: 'Verify/change Discord username for the login website',
+        options: [
+            {
+                name: 'login-username',
+                description: 'Exact username you used for the login website',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+            {
+                name: 'login-token',
+                description: "Exact token generated from login website (sign in and click 'generate verify Discord token')",
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+        ],
+    },
+    {
+        name: 'reset-password',
+        description: 'Reset your password on the login website. Only works if you\'ve verified your Discord!',
+        options: [
+            {
+                name: 'login-username',
+                description: 'Exact username you used for the login website',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            }
+        ],
+    }
 ];
 
 const rest = new REST({version: '10'}).setToken(process.env.TOKEN);

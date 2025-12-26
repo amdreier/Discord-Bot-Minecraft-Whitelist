@@ -41,16 +41,16 @@ client.on('interactionCreate', (interaction) => {
     if (interaction.commandName === 'whitelist') {
         try {
             (async () => {
-                console.log(`${interaction.member.user.tag} whitelist add Minecraft: ${interaction.options.get('minecraft-username').value}`);
+                console.log(`${interaction.member.user.username} whitelist add Minecraft: ${interaction.options.get('minecraft-username').value}`);
 
                 // check for interaction in the correct channel
-                const channel = await client.channels.cache.get('1103163793284010024'); // Needs to be changed to server whitelist channel
+                const channel = await client.channels.cache.get('1103163793284010024'); // Needs to be changed to server bots channel
 
                 if (!channel) {
                     interaction.reply({content: 'Channel does not exist!', ephemeral: true});
                     return;
                 }
-                                                // Needs to be changed to server whitelist channel
+                                                // Needs to be changed to server bots channel
                 if (!(interaction.channelId === '1103163793284010024')) {
                     interaction.reply({content: 'You don\'t have access to that here.', ephemeral: true});
                     return;
@@ -85,18 +85,23 @@ client.on('interactionCreate', (interaction) => {
                     }
                 }
                 
-                // handel RCON
-                const rcon = await Rcon.connect({
-                    host: "romaetplus.amdreier.com", port: 2570, password: process.env.RCON_PSWD
-                });
+                try {
+                    // handel RCON
+                    const rcon = await Rcon.connect({
+                        host: "romaetplus.amdreier.com", port: 2570, password: process.env.RCON_PSWD
+                    });
 
-                await rcon.send(`say From Whitelist-bot: ${quote([interaction.member.user.username])} added ${quote([interaction.options.get('minecraft-username').value])} to the Whitelist`);
-    
-                let response = await rcon.send(`whitelist add ${quote([interaction.options.get('minecraft-username').value])}`);
-                 
-                await interaction.followUp(`Server response: ${response}`);
-                 
-                rcon.end();
+                    await rcon.send(`say From Whitelist-bot: ${quote([interaction.member.user.username])} added ${quote([interaction.options.get('minecraft-username').value])} to the Whitelist`);
+        
+                    let response = await rcon.send(`whitelist add ${quote([interaction.options.get('minecraft-username').value])}`);
+                    
+                    await interaction.followUp(`Server response: ${response}`);
+                    
+                    rcon.end();
+                } catch (err) {
+                    await interaction.followUp('Error adding player to whitelist. Please try again later.');
+                    console.log(`Error connecting to RCON: ${err}`)
+                }
             })();
         } catch (error) {
             console.log(`Error whitelisting: ${error}`);
@@ -111,6 +116,67 @@ client.on('interactionCreate', (interaction) => {
                 ephemeral: true
                 }
             );
+    }
+
+    // /verify [login-username] [login-token]
+    if (interaction.commandName === 'verify') {
+        interaction.reply(
+                {
+                content: 'Useage: /whitelist [Minecraft Username] [Optional: Discord nickname] (without the [])\nDescription: Whitelists the selected Minecraft username on the server. If a Discord nickname on the server is provided, it will add the \"Whitelisted\" role to that user.\nRequirements:\n\t- The command issuer MUST have the \"Trusted\" role.\n- The command must be issued in the \"whitelisting\" channel.\n- If the person being whitelisted is on the Discord server, include that in the command (although this is not required).\n\nAdditional info: Be careful who you whitelist! You are responsible for them, and any punishment they receive, for a while, will be applied to you too (within reason)!',
+                ephemeral: true
+                }
+            );
+    }
+
+    // /verify [login-username] [login-token]
+    if (interaction.commandName === 'verify') {
+        try {
+            (async () => {
+                await interaction.deferReply();
+
+                const login_username = interaction.options.get('login-username')?.value || "";
+                const disc_username = interaction.user.username;
+                const disc_uid = interaction.user.id;
+                const token = interaction.options.get('token')?.value || "";
+                success = false;
+                expired = false;
+
+                fetch("https://romaetplus.amdreier.com/api/verify", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        login_username: login_username,
+                        disc_username: disc_username,
+                        disc_uid: disc_uid,
+                        token: token,
+                        api_key: process.env.API_KEY
+                    }),
+                })
+                .then(res => {
+                    if (res.status == 200) {
+                        success = true;
+                    } else if (res.status == 410) {
+                        expired = true;
+                    }
+                })
+
+                const successMsg = "You\'re discord has been verified!";
+                const expiredMsg = "You're token is expired! Please log into the website and generate a new one.";
+                const errMsg = "There was an error verifying your Discord account. Please make sure the username you entered is the same one you used to log into the website and generate this token."
+                const reply = success ? successMsg : expired ? expiredMsg : errMsg;
+
+                interaction.reply(
+                    {
+                    content: reply,
+                    ephemeral: true
+                    }
+                );
+            })();
+        } catch (error) {
+            
+        }
     }
 });
 
