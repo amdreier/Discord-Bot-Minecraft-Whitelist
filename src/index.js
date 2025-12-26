@@ -120,16 +120,6 @@ client.on('interactionCreate', (interaction) => {
 
     // /verify [login-username] [login-token]
     if (interaction.commandName === 'verify') {
-        interaction.reply(
-                {
-                content: 'Useage: /whitelist [Minecraft Username] [Optional: Discord nickname] (without the [])\nDescription: Whitelists the selected Minecraft username on the server. If a Discord nickname on the server is provided, it will add the \"Whitelisted\" role to that user.\nRequirements:\n\t- The command issuer MUST have the \"Trusted\" role.\n- The command must be issued in the \"whitelisting\" channel.\n- If the person being whitelisted is on the Discord server, include that in the command (although this is not required).\n\nAdditional info: Be careful who you whitelist! You are responsible for them, and any punishment they receive, for a while, will be applied to you too (within reason)!',
-                ephemeral: true
-                }
-            );
-    }
-
-    // /verify [login-username] [login-token]
-    if (interaction.commandName === 'verify') {
         try {
             (async () => {
                 await interaction.deferReply();
