@@ -54,6 +54,10 @@ const commands = [
                 required: true,
             }
         ],
+    },
+    {
+        name: 'status',
+        description: 'Returns the current status of the Minecraft server.', 
     }
 ];
 

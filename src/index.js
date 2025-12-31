@@ -1,7 +1,16 @@
 require('dotenv').config();
-const {Client, IntentsBitField, Message} = require("discord.js");
+const {Client, IntentsBitField, Message, ChannelType, PermissionsBitField } = require("discord.js");
 const {Rcon} = require("rcon-client");
 const quote = require('shell-quote/quote');
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+const port = 6000;
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+
 
 const client = new Client({
     intents: [
@@ -11,6 +20,217 @@ const client = new Client({
         IntentsBitField.Flags.MessageContent,
     ]
 });
+
+let guild = null;
+
+// api
+app.post('/Nations/create/:name/:color', async (req, res) => {
+    const api_key = req.body.api_key;
+    const name = req.params.name;
+    const color = req.params.color;
+
+    if (api_key != process.env.API_KEY) {
+        console.log("bad API key for /Nations/create");
+        return;
+    }
+
+    console.log(`create nation: ${name}`);
+
+    if (!guild) {
+        guild = await client.guilds.fetch(process.env.GUILD_ID);
+    }
+
+    await guild.roles.fetch();
+
+    let role = guild.roles.cache.find(r => r.name === name);
+    if (!role) {
+        const botMember = await guild.members.fetchMe();
+        const botTopRolePos = botMember.roles.highest.position;
+
+        role = await guild.roles.create({
+            name: name,
+            color: `#${color}`,
+            mentionable: true,
+            reason: 'Auto-created role',
+        });
+
+        await role.setPosition(botTopRolePos - 5, { reason: 'Move near top' });
+    }
+
+    await guild.channels.fetch();
+
+    const text_exists = guild.channels.cache.find(c =>
+        c.type === ChannelType.GuildText &&
+        c.name === `${name.toLocaleLowerCase()}-citizens`
+    );
+
+    if (!text_exists) {
+        const channel = await guild.channels.create({
+        name: `${name}-citizens`,
+        type: ChannelType.GuildText,
+        parent: process.env.TEXT_CATEGORY_ID,
+        permissionOverwrites: [
+            // Hide from everyone
+            {
+            id: guild.roles.everyone.id,
+            deny: [PermissionsBitField.Flags.ViewChannel],
+            },
+            // Allow the role to see + use the channel
+            {
+            id: role.id,
+            allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+                PermissionsBitField.Flags.ReadMessageHistory,
+            ],
+            },
+        ],
+        });
+    
+        const voice_exists = guild.channels.cache.find(c =>
+            c.type === ChannelType.GuildVoice &&
+            c.name === `${name} Citizens`
+        );
+
+        if (!voice_exists) {
+            const channel = await guild.channels.create({
+            name: `${name} Citizens`,
+            type: ChannelType.GuildVoice,
+            parent: process.env.VOICE_CATEGORY_ID,
+            permissionOverwrites: [
+                // Hide from everyone
+                {
+                id: guild.roles.everyone.id,
+                deny: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.Connect],
+                },
+                // Allow the role to see + use the channel
+                {
+                id: role.id,
+                allow: [
+                    PermissionsBitField.Flags.ViewChannel,
+                    PermissionsBitField.Flags.Connect,
+                    PermissionsBitField.Flags.Speak,
+                    PermissionsBitField.Flags.Stream,
+                ],
+                },
+            ],
+            });
+        }
+    }
+
+    res.status(200).send("Ok");
+});
+
+app.post('/Nations/delete/:name', async (req, res) => {
+    const api_key = req.body.api_key;
+    const name = req.params.name;
+
+    if (api_key != process.env.API_KEY) {
+        console.log("bad API key for /Nations/delete");
+        return;
+    }
+
+    console.log(`delete nation: ${name}`);
+
+    if (!guild) {
+        guild = await client.guilds.fetch(process.env.GUILD_ID);
+    }
+
+    await guild.roles.fetch();
+
+    let role = guild.roles.cache.find(r => r.name === name);
+    if (role && role.id !== guild.roles.everyone.id) {
+        await role.delete('Deleting nation');
+    }
+
+    await guild.channels.fetch();
+
+    const text_channel = guild.channels.cache.find(c =>
+        c.type === ChannelType.GuildText &&
+        c.name === `${name.toLocaleLowerCase()}-citizens`
+    );
+    if (text_channel) {
+        text_channel.delete('Deleting nation');
+    }
+
+    const voice_channel = guild.channels.cache.find(c =>
+        c.type === ChannelType.GuildVoice &&
+        c.name === `${name} Citizens`
+    );
+    if (voice_channel) {
+        voice_channel.delete('Deleting nation');
+    }
+
+    res.status(200).send("Ok");
+});
+
+app.post('/Nations/join/:name/:player/:disc_uid', async (req, res) => {
+    const api_key = req.body.api_key;
+    const name = req.params.name;
+    const player = req.params.player;
+    const disc_uid = req.params.disc_uid;
+
+    if (api_key != process.env.API_KEY) {
+        console.log("bad API key for /Nations/delete");
+        return;
+    }
+
+    console.log(`@${player} join nation: ${name}`);
+
+    if (!guild) {
+        guild = await client.guilds.fetch(process.env.GUILD_ID);
+    }
+
+    try {
+        const member = await guild.members.fetch(disc_uid);
+
+        await guild.roles.fetch();
+
+        let role = guild.roles.cache.find(r => r.name === name);
+        if (role && role.id !== guild.roles.everyone.id) {
+            await member.roles.add(role, 'Assigning role via bot');
+        }
+    } catch (err) {
+        console.log(err);
+    }
+
+    res.status(200).send("Ok");
+});
+
+app.post('/Nations/leave/:name/:player/:disc_uid', async (req, res) => {
+    const api_key = req.body.api_key;
+    const name = req.params.name;
+    const player = req.params.player;
+    const disc_uid = req.params.disc_uid;
+
+    if (api_key != process.env.API_KEY) {
+        console.log("bad API key for /Nations/delete");
+        return;
+    }
+
+    console.log(`@${player} leave nation: ${name}`);
+
+    if (!guild) {
+        guild = await client.guilds.fetch(process.env.GUILD_ID);
+    }
+
+    try {
+        const member = await guild.members.fetch(disc_uid);
+
+        await guild.roles.fetch();
+
+        let role = guild.roles.cache.find(r => r.name === name);
+        if (role && role.id !== guild.roles.everyone.id) {
+            await member.roles.remove(role, 'Removing role via bot');
+        }
+    } catch (err) {
+        member = null;
+    }
+
+    res.status(200).send("Ok");
+});
+
+app.listen(port, () => console.log(`Server started on port: ${port}\n`));
 
 
 /////////////////////////
@@ -116,6 +336,37 @@ client.on('interactionCreate', (interaction) => {
                 ephemeral: true
                 }
             );
+    }
+
+    // /status
+    if (interaction.commandName === 'status') {
+        (async () => {
+            try {
+                // handel RCON
+                const rcon = await Rcon.connect({
+                    host: "romaetplus.amdreier.com", port: 2570, password: process.env.RCON_PSWD
+                });
+
+                let status = await rcon.send(`list`);
+                
+                interaction.reply(
+                    {
+                    content: `Server status: ${status}`,
+                    ephemeral: true
+                    }
+                );
+                
+                rcon.end();
+            } catch (err) {
+                interaction.reply(
+                    {
+                    content: 'Server status: Shutdown',
+                    ephemeral: true
+                    }
+                );
+                console.log(`Error connecting to RCON: ${err}`)
+            }
+        })();
     }
 
     // /verify [login-username] [login-token]

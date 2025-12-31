@@ -10,9 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^2.2.1",
     "discord.js": "^14.10.2",
     "dotenv": "^16.0.3",
+    "express": "^5.2.1",
     "modern-rcon": "^1.0.3",
-    "rcon-client": "^4.2.3"
+    "rcon-client": "^4.2.3",
+    "shell-quote": "^1.8.3"
   }
 }
